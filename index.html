@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan & Operasi Hitung Bilangan Pecahan Interaktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Penulisan pecahan tegak lurus yang presisi */
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 4px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        .fraction .numerator {
+            border-bottom: 2px solid currentColor;
+            padding-bottom: 2px;
+            display: block;
+        }
+        .fraction .denominator {
+            padding-top: 2px;
+            display: block;
+        }
+        .mixed-fraction {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 700;
+            vertical-align: middle;
+        }
+        /* Menghilangkan tombol spin bawaan pada input angka */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col text-slate-800 bg-slate-50">
+
+    <header class="sticky top-0 z-30 bg-indigo-800 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-700 rounded-xl shadow-inner text-2xl text-amber-300">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Kuis & Operasi Hitung Bilangan Pecahan</h1>
+                    <p class="text-xs sm:text-sm text-indigo-200">Visual Geometri, Konversi, & Operasi (+ - &times; &divide;) Tegak Lurus</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button id="btn-generate" onclick="generateNewQuestions()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg shadow transition duration-200 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>Acak Ulang Soal</span>
+                </button>
+                <button id="btn-check" onclick="checkAllAnswers()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg shadow transition duration-200 flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Cek Semua Jawaban</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6 space-y-6">
+        
+        <!-- Score Board Bar -->
+        <div id="score-board" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left transition-all">
+            <div class="flex items-center gap-4">
+                <div id="score-badge" class="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white bg-indigo-600 shadow">
+                    0%
+                </div>
+                <div>
+                    <h3 id="score-title" class="text-lg font-bold text-slate-800">Hasil Evaluasi</h3>
+                    <p id="score-detail" class="text-sm text-slate-600">Kamu telah menjawab 0 dari 0 soal dengan benar.</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="scrollToTop()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg text-sm transition">
+                    Kembali ke Atas
+                </button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-slate-200 text-xs sm:text-sm">
+            <button onclick="filterSection('all', event)" class="tab-btn active px-3.5 py-2 rounded-xl font-semibold bg-indigo-600 text-white whitespace-nowrap shadow-sm">
+                Semua Soal
+            </button>
+            <button onclick="filterSection('sec-1', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                1. Visual Pecahan
+            </button>
+            <button onclick="filterSection('sec-2', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                2. Pecahan Senilai
+            </button>
+            <button onclick="filterSection('sec-3', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                3. Membandingkan
+            </button>
+            <button onclick="filterSection('sec-4', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                4. Mengurutkan
+            </button>
+            <button onclick="filterSection('sec-5', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                5. Konversi Campuran
+            </button>
+            <button onclick="filterSection('sec-6', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                6. Desimal
+            </button>
+            <button onclick="filterSection('sec-7', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                7. Persen
+            </button>
+            <button onclick="filterSection('sec-8', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                8. Penjumlahan (+)
+            </button>
+            <button onclick="filterSection('sec-9', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                9. Pengurangan (-)
+            </button>
+            <button onclick="filterSection('sec-10', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                10. Perkalian (&times;)
+            </button>
+            <button onclick="filterSection('sec-11', event)" class="tab-btn px-3.5 py-2 rounded-xl font-semibold bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 whitespace-nowrap">
+                11. Pembagian (&divide;)
+            </button>
+        </div>
+
+        <div id="questions-container" class="space-y-8">
+            <!-- Soal di-inject via JavaScript -->
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-slate-500 text-sm">
+        <div class="max-w-6xl mx-auto px-4">
+            <p class="font-semibold text-slate-700">Modul Interaktif Matematika Pecahan Lengkap</p>
+            <p class="text-xs text-slate-400 mt-1">Latihan Interaktif Matematika SD/SMP - Konversi & Operasi Hitung Pecahan</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentQuestionsData = [];
+
+        // Helper format HTML untuk Pecahan Biasa
+        function fHTML(num, den) {
+            return `<span class="fraction"><span class="numerator">${num}</span><span class="denominator">${den}</span></span>`;
+        }
+
+        // Helper format HTML untuk Pecahan Campuran
+        function mHTML(whole, num, den) {
+            return `<span class="mixed-fraction"><span>${whole}</span><span class="fraction"><span class="numerator">${num}</span><span class="denominator">${den}</span></span></span>`;
+        }
+
+        // SVG 1: Grid Persegi Diagonal (16 Bagian)
+        function createSquareGridSVG(shadedIndices, size = 160) {
+            const w = size;
+            const h = size / 2;
+            const halfW = w / 2;
+
+            const triangles = [
+                // Box Kiri (8 Segitiga)
+                `M0,0 L${halfW/2},${h/2} L0,${h/2} Z`,
+                `M0,0 L${halfW/2},${h/2} L${halfW/2},0 Z`,
+                `M${halfW/2},0 L${halfW/2},${h/2} L${halfW},0 Z`,
+                `M${halfW},0 L${halfW/2},${h/2} L${halfW},${h/2} Z`,
+                `M${halfW},${h/2} L${halfW/2},${h/2} L${halfW},${h} Z`,
+                `M${halfW},${h} L${halfW/2},${h/2} L${halfW/2},${h} Z`,
+                `M${halfW/2},${h} L${halfW/2},${h/2} L0,${h} Z`,
+                `M0,${h} L${halfW/2},${h/2} L0,${h/2} Z`,
+
+                // Box Kanan (8 Segitiga)
+                `M${halfW},0 L${halfW + halfW/2},${h/2} L${halfW},${h/2} Z`,
+                `M${halfW},0 L${halfW + halfW/2},${h/2} L${halfW + halfW/2},0 Z`,
+                `M${halfW + halfW/2},0 L${halfW + halfW/2},${h/2} L${w},0 Z`,
+                `M${w},0 L${halfW + halfW/2},${h/2} L${w},${h/2} Z`,
+                `M${w},${h/2} L${halfW + halfW/2},${h/2} L${w},${h} Z`,
+                `M${w},${h} L${halfW + halfW/2},${h/2} L${halfW + halfW/2},${h} Z`,
+                `M${halfW + halfW/2},${h} L${halfW + halfW/2},${h/2} L${halfW},${h} Z`,
+                `M${halfW},${h} L${halfW + halfW/2},${h/2} L${halfW},${h/2} Z`
+            ];
+
+            let pathElements = triangles.map((d, idx) => {
+                const isShaded = shadedIndices.includes(idx);
+                const fill = isShaded ? '#6366f1' : '#ffffff';
+                return `<path d="${d}" fill="${fill}" stroke="#1e293b" stroke-width="1.5" />`;
+            });
+
+            return `
+            <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" class="inline-block drop-shadow-sm">
+                <rect x="0" y="0" width="${w}" height="${h}" fill="none" stroke="#1e293b" stroke-width="2" />
+                <line x1="${halfW}" y1="0" x2="${halfW}" y2="${h}" stroke="#1e293b" stroke-width="2" />
+                ${pathElements.join('')}
+            </svg>`;
+        }
+
+        // SVG 2: Roda Cakram Berlapis (16 Bagian)
+        function createDartboardWheelSVG(shadedIndices, size = 130) {
+            const cx = size / 2;
+            const cy = size / 2;
+            const rOuter = size / 2 - 4;
+            const rInner = rOuter * 0.55;
+
+            let paths = [];
+            const sectors = 8;
+            const angleStep = (2 * Math.PI) / sectors;
+
+            let count = 0;
+            for (let i = 0; i < sectors; i++) {
+                const a1 = i * angleStep - Math.PI / 2;
+                const a2 = (i + 1) * angleStep - Math.PI / 2;
+
+                const cos1 = Math.cos(a1), sin1 = Math.sin(a1);
+                const cos2 = Math.cos(a2), sin2 = Math.sin(a2);
+
+                const inX1 = cx + rInner * cos1, inY1 = cy + rInner * sin1;
+                const inX2 = cx + rInner * cos2, inY2 = cy + rInner * sin2;
+                const innerD = `M ${cx} ${cy} L ${inX1} ${inY1} A ${rInner} ${rInner} 0 0 1 ${inX2} ${inY2} Z`;
+                
+                const isInnerShaded = shadedIndices.includes(count);
+                paths.push(`<path d="${innerD}" fill="${isInnerShaded ? '#6366f1' : '#ffffff'}" stroke="#1e293b" stroke-width="1.5" />`);
+                count++;
+
+                const outX1 = cx + rOuter * cos1, outY1 = cy + rOuter * sin1;
+                const outX2 = cx + rOuter * cos2, outY2 = cy + rOuter * sin2;
+                const outerD = `M ${inX1} ${inY1} L ${outX1} ${outY1} A ${rOuter} ${rOuter} 0 0 1 ${outX2} ${outY2} L ${inX2} ${inY2} A ${rInner} ${rInner} 0 0 0 ${inX1} ${inY1} Z`;
+
+                const isOuterShaded = shadedIndices.includes(count);
+                paths.push(`<path d="${outerD}" fill="${isOuterShaded ? '#6366f1' : '#ffffff'}" stroke="#1e293b" stroke-width="1.5" />`);
+                count++;
+            }
+
+            return `
+            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="inline-block drop-shadow-sm">
+                ${paths.join('')}
+            </svg>`;
+        }
+
+        // SVG 3: Piramida Segitiga (16 Bagian)
+        function createPyramidTrianglesSVG(shadedIndices, size = 130) {
+            const h = size - 8;
+            const w = size - 8;
+            const rows = 4;
+            const rowH = h / rows;
+            let triangles = [];
+            let count = 0;
+
+            for (let r = 0; r < rows; r++) {
+                const yTop = 4 + r * rowH;
+                const yBot = 4 + (r + 1) * rowH;
+
+                const numTri = 2 * r + 1;
+                const triW = w / rows;
+
+                const startX = (size - (r + 1) * triW) / 2;
+
+                for (let i = 0; i < numTri; i++) {
+                    let d = '';
+                    if (i % 2 === 0) {
+                        const x1 = startX + (i / 2) * triW;
+                        const x2 = x1 + triW;
+                        const xMid = (x1 + x2) / 2;
+                        d = `M ${xMid},${yTop} L ${x2},${yBot} L ${x1},${yBot} Z`;
+                    } else {
+                        const x1 = startX + Math.floor(i / 2) * triW + triW / 2;
+                        const x2 = x1 + triW;
+                        const xMid = (x1 + x2) / 2;
+                        d = `M ${x1},${yTop} L ${x2},${yTop} L ${xMid},${yBot} Z`;
+                    }
+
+                    const isShaded = shadedIndices.includes(count);
+                    triangles.push(`<path d="${d}" fill="${isShaded ? '#6366f1' : '#ffffff'}" stroke="#1e293b" stroke-width="1.5" />`);
+                    count++;
+                }
+            }
+
+            return `
+            <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="inline-block drop-shadow-sm">
+                ${triangles.join('')}
+            </svg>`;
+        }
+
+        function generateQuestions() {
+            return [
+                // SECTION 1: VISUAL FRACTIONS (Soal Baru)
+                {
+                    sectionId: 'sec-1',
+                    sectionTitle: '1. Pecahan dari Daerah Terarsir (Visual)',
+                    subtitle: 'Hitung bagian terarsir pada gambar geometri di bawah ini dengan tepat',
+                    questions: [
+                        {
+                            id: 'q1_a',
+                            code: '1a',
+                            type: 'visual_proper',
+                            title: 'Grid Persegi Diagonal',
+                            svg: createSquareGridSVG([0, 1, 2, 4, 6, 8, 9, 11, 13, 15]), // 10 terarsir dari 16
+                            correctAnswerNumerator: 10,
+                            correctAnswerDenominator: 16,
+                            altNum: 5, altDen: 8,
+                            explanation: `Gambar terdiri dari 2 persegi yang masing-masing terbagi menjadi 8 segitiga (total 16 bagian). Terdapat 10 segitiga terarsir. Pecahannya adalah <b>${fHTML(10, 16)}</b> (atau disederhanakan <b>${fHTML(5, 8)}</b>).`
+                        },
+                        {
+                            id: 'q1_b',
+                            code: '1b',
+                            type: 'visual_proper',
+                            title: 'Roda Berlapis',
+                            svg: createDartboardWheelSVG([1, 3, 4, 6, 8, 10, 12]), // 7 terarsir dari 16
+                            correctAnswerNumerator: 7,
+                            correctAnswerDenominator: 16,
+                            explanation: `Cakram roda memiliki 8 sektor &times; 2 lapisan (total 16 bagian sama besar). Terhitung ada 7 bagian terarsir. Nilai pecahannya adalah <b>${fHTML(7, 16)}</b>.`
+                        },
+                        {
+                            id: 'q1_c',
+                            code: '1c',
+                            type: 'visual_proper',
+                            title: 'Piramida Segitiga',
+                            svg: createPyramidTrianglesSVG([0, 2, 3, 5, 6, 8, 9, 11, 12, 14, 15]), // 11 terarsir dari 16
+                            correctAnswerNumerator: 11,
+                            correctAnswerDenominator: 16,
+                            explanation: `Piramida terbagi menjadi 16 segitiga kecil (1+3+5+7). Terdapat 11 segitiga terarsir. Nilai pecahannya adalah <b>${fHTML(11, 16)}</b>.`
+                        },
+                        {
+                            id: 'q1_d',
+                            code: '1d',
+                            type: 'visual_mixed',
+                            title: 'Pecahan Campuran Visual',
+                            svg: `
+                                <div class="flex flex-wrap items-center justify-center gap-3 bg-slate-100 p-3 rounded-xl">
+                                    ${createSquareGridSVG([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 100)}
+                                    ${createSquareGridSVG([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 100)}
+                                    ${createSquareGridSVG([0,2,4,6,8,10,12,14], 100)}
+                                </div>
+                            `,
+                            correctWhole: 2,
+                            correctNum: 8,
+                            correctDen: 16,
+                            altNum: 1,
+                            altDen: 2,
+                            explanation: `Ada 2 diagram terarsir utuh (2), dan 1 diagram terarsir 8 dari 16 bagian (${fHTML(8, 16)}). Pecahan campurannya adalah <b>${mHTML(2, 8, 16)}</b> atau <b>${mHTML(2, 1, 2)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 2: EQUIVALENT & SIMPLIFIED (Soal Baru)
+                {
+                    sectionId: 'sec-2',
+                    sectionTitle: '2. Pecahan Senilai & Sederhana',
+                    subtitle: 'Menentukan pasangan pecahan senilai dan menyederhanakannya',
+                    questions: [
+                        {
+                            id: 'q2_a',
+                            code: '2a',
+                            type: 'equivalent',
+                            num: 3,
+                            den: 8,
+                            explanation: `Pecahan senilai dari ${fHTML(3, 8)} dikalikan bilangan bulat sama:<br>• ${fHTML('3 &times; 2', '8 &times; 2')} = <b>${fHTML(6, 16)}</b><br>• ${fHTML('3 &times; 3', '8 &times; 3')} = <b>${fHTML(9, 24)}</b>`
+                        },
+                        {
+                            id: 'q2_b',
+                            code: '2b',
+                            type: 'equivalent',
+                            num: 5,
+                            den: 9,
+                            explanation: `Pecahan senilai dari ${fHTML(5, 9)}:<br>• ${fHTML('5 &times; 2', '9 &times; 2')} = <b>${fHTML(10, 18)}</b><br>• ${fHTML('5 &times; 3', '9 &times; 3')} = <b>${fHTML(15, 27)}</b>`
+                        },
+                        {
+                            id: 'q2_c',
+                            code: '2c',
+                            type: 'simplify',
+                            num: 48,
+                            den: 72,
+                            correctNum: 2,
+                            correctDen: 3,
+                            explanation: `FPB dari 48 dan 72 adalah 24. Bagi pembilang dan penyebut dengan 24:<br>${fHTML('48 &divide; 24', '72 &divide; 24')} = <b>${fHTML(2, 3)}</b>.`
+                        },
+                        {
+                            id: 'q2_d',
+                            code: '2d',
+                            type: 'simplify',
+                            num: 96,
+                            den: 144,
+                            correctNum: 2,
+                            correctDen: 3,
+                            explanation: `FPB dari 96 dan 144 adalah 48. Bagi pembilang dan penyebut dengan 48:<br>${fHTML('96 &divide; 48', '144 &divide; 48')} = <b>${fHTML(2, 3)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 3: COMPARING FRACTIONS (Soal Baru)
+                {
+                    sectionId: 'sec-3',
+                    sectionTitle: '3. Membandingkan Pecahan',
+                    subtitle: 'Pilih simbol > (lebih besar) atau < (lebih kecil)',
+                    questions: [
+                        {
+                            id: 'q3_a',
+                            code: '3a',
+                            num1: 5, den1: 12,
+                            num2: 7, den2: 15,
+                            correct: '<',
+                            explanation: `Samakan penyebut (KPK 60):<br>• ${fHTML(5, 12)} = ${fHTML(25, 60)}<br>• ${fHTML(7, 15)} = ${fHTML(28, 60)}<br>Karena 25 &lt; 28, maka <b>${fHTML(5, 12)} &lt; ${fHTML(7, 15)}</b>.`
+                        },
+                        {
+                            id: 'q3_b',
+                            code: '3b',
+                            num1: 4, den1: 7,
+                            num2: 3, den2: 5,
+                            correct: '<',
+                            explanation: `Samakan penyebut (KPK 35):<br>• ${fHTML(4, 7)} = ${fHTML(20, 35)}<br>• ${fHTML(3, 5)} = ${fHTML(21, 35)}<br>Karena 20 &lt; 21, maka <b>${fHTML(4, 7)} &lt; ${fHTML(3, 5)}</b>.`
+                        },
+                        {
+                            id: 'q3_c',
+                            code: '3c',
+                            num1: 5, den1: 9,
+                            num2: 11, den2: 18,
+                            correct: '<',
+                            explanation: `Samakan penyebut (KPK 18):<br>• ${fHTML(5, 9)} = ${fHTML(10, 18)}<br>• ${fHTML(11, 18)} = ${fHTML(11, 18)}<br>Karena 10 &lt; 11, maka <b>${fHTML(5, 9)} &lt; ${fHTML(11, 18)}</b>.`
+                        },
+                        {
+                            id: 'q3_d',
+                            code: '3d',
+                            num1: 7, den1: 10,
+                            num2: 3, den2: 4,
+                            correct: '<',
+                            explanation: `Samakan penyebut (KPK 20):<br>• ${fHTML(7, 10)} = ${fHTML(14, 20)}<br>• ${fHTML(3, 4)} = ${fHTML(15, 20)}<br>Karena 14 &lt; 15, maka <b>${fHTML(7, 10)} &lt; ${fHTML(3, 4)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 4: ORDERING FRACTIONS (Soal Baru)
+                {
+                    sectionId: 'sec-4',
+                    sectionTitle: '4. Mengurutkan Pecahan',
+                    subtitle: 'Urutkan dari terkecil ke terbesar (naik) atau terbesar ke terkecil (turun)',
+                    questions: [
+                        {
+                            id: 'q4_a',
+                            code: '4a',
+                            title: 'Urutkan NAIK (terkecil ke terbesar):',
+                            list: [{num: 2, den: 5}, {num: 3, den: 10}, {num: 1, den: 2}],
+                            correctOrder: ['3/10', '2/5', '1/2'],
+                            explanation: `Samakan penyebut ke KPK 10:<br>• ${fHTML(2, 5)} = ${fHTML(4, 10)}<br>• ${fHTML(3, 10)} = ${fHTML(3, 10)}<br>• ${fHTML(1, 2)} = ${fHTML(5, 10)}<br>Urutan naik: <b>${fHTML(3, 10)} , ${fHTML(2, 5)} , ${fHTML(1, 2)}</b>.`
+                        },
+                        {
+                            id: 'q4_b',
+                            code: '4b',
+                            title: 'Urutkan NAIK (terkecil ke terbesar):',
+                            list: [{num: 1, den: 2}, {num: 4, den: 9}, {num: 2, den: 3}],
+                            correctOrder: ['4/9', '1/2', '2/3'],
+                            explanation: `Samakan penyebut ke KPK 18:<br>• ${fHTML(1, 2)} = ${fHTML(9, 18)}<br>• ${fHTML(4, 9)} = ${fHTML(8, 18)}<br>• ${fHTML(2, 3)} = ${fHTML(12, 18)}<br>Urutan naik: <b>${fHTML(4, 9)} , ${fHTML(1, 2)} , ${fHTML(2, 3)}</b>.`
+                        },
+                        {
+                            id: 'q4_c',
+                            code: '4c',
+                            title: 'Urutkan TURUN (terbesar ke terkecil):',
+                            list: [{num: 3, den: 4}, {num: 5, den: 6}, {num: 7, den: 12}],
+                            correctOrder: ['5/6', '3/4', '7/12'],
+                            explanation: `Samakan penyebut ke KPK 12:<br>• ${fHTML(3, 4)} = ${fHTML(9, 12)}<br>• ${fHTML(5, 6)} = ${fHTML(10, 12)}<br>• ${fHTML(7, 12)} = ${fHTML(7, 12)}<br>Urutan turun: <b>${fHTML(5, 6)} , ${fHTML(3, 4)} , ${fHTML(7, 12)}</b>.`
+                        },
+                        {
+                            id: 'q4_d',
+                            code: '4d',
+                            title: 'Urutkan TURUN (terbesar ke terkecil):',
+                            list: [{num: 7, den: 10}, {num: 4, den: 5}, {num: 3, den: 5}],
+                            correctOrder: ['4/5', '7/10', '3/5'],
+                            explanation: `Samakan penyebut ke KPK 10:<br>• ${fHTML(7, 10)} = ${fHTML(7, 10)}<br>• ${fHTML(4, 5)} = ${fHTML(8, 10)}<br>• ${fHTML(3, 5)} = ${fHTML(6, 10)}<br>Urutan turun: <b>${fHTML(4, 5)} , ${fHTML(7, 10)} , ${fHTML(3, 5)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 5: MIXED FRACTION CONVERSION (Soal Baru)
+                {
+                    sectionId: 'sec-5',
+                    sectionTitle: '5. Konversi Pecahan Campuran',
+                    subtitle: 'Ubah ke bentuk campuran atau biasa dengan akurat',
+                    questions: [
+                        {
+                            id: 'q5_a',
+                            code: '5a',
+                            title: 'Ubah ke pecahan campuran:',
+                            num: 95, den: 12,
+                            correctWhole: 7, correctNum: 11, correctDen: 12,
+                            explanation: `95 &divide; 12 = 7 sisa 11. Maka ${fHTML(95, 12)} = <b>${mHTML(7, 11, 12)}</b>.`
+                        },
+                        {
+                            id: 'q5_b',
+                            code: '5b',
+                            title: 'Ubah ke pecahan campuran:',
+                            num: 113, den: 14,
+                            correctWhole: 8, correctNum: 1, correctDen: 14,
+                            explanation: `113 &divide; 14 = 8 sisa 1. Maka ${fHTML(113, 14)} = <b>${mHTML(8, 1, 14)}</b>.`
+                        },
+                        {
+                            id: 'q5_c',
+                            code: '5c',
+                            title: 'Ubah ke pecahan biasa:',
+                            whole: 8, num: 5, den: 9,
+                            correctNum: 77, correctDen: 9,
+                            explanation: `(8 &times; 9) + 5 = 72 + 5 = 77. Maka ${mHTML(8, 5, 9)} = <b>${fHTML(77, 9)}</b>.`
+                        },
+                        {
+                            id: 'q5_d',
+                            code: '5d',
+                            title: 'Ubah ke pecahan biasa:',
+                            whole: -6, num: 4, den: 7,
+                            correctNum: -46, correctDen: 7,
+                            explanation: `- ( (6 &times; 7) + 4 ) / 7 = - (42 + 4) / 7 = <b>-${fHTML(46, 7)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 6: DECIMAL CONVERSION (Soal Baru)
+                {
+                    sectionId: 'sec-6',
+                    sectionTitle: '6. Konversi Desimal',
+                    subtitle: 'Saling ubah antara bentuk pecahan dan desimal',
+                    questions: [
+                        {
+                            id: 'q6_a',
+                            code: '6a',
+                            title: `Nyatakan ${fHTML(7, 16)} sebagai desimal:`,
+                            correctDec: '0.4375',
+                            explanation: '7 &divide; 16 = <b>0.4375</b> (bisa menggunakan koma atau titik).'
+                        },
+                        {
+                            id: 'q6_b',
+                            code: '6b',
+                            title: `Nyatakan ${mHTML(4, 3, 8)} sebagai desimal:`,
+                            correctDec: '4.375',
+                            explanation: '3 &divide; 8 = 0.375. Maka 4 + 0.375 = <b>4.375</b>.'
+                        },
+                        {
+                            id: 'q6_c',
+                            code: '6c',
+                            title: 'Nyatakan desimal 5,48 sebagai pecahan campuran / biasa paling sederhana:',
+                            correctWhole: 5, correctNum: 12, correctDen: 25,
+                            altNum: 137, altDen: 25,
+                            explanation: `5,48 = ${mHTML(5, 48, 100)} = <b>${mHTML(5, 12, 25)}</b> (atau pecahan biasa <b>${fHTML(137, 25)}</b>).`
+                        },
+                        {
+                            id: 'q6_d',
+                            code: '6d',
+                            title: 'Nyatakan desimal 3,125 sebagai pecahan campuran / biasa paling sederhana:',
+                            correctWhole: 3, correctNum: 1, correctDen: 8,
+                            altNum: 25, altDen: 8,
+                            explanation: `3,125 = ${mHTML(3, 125, 1000)} = <b>${mHTML(3, 1, 8)}</b> (atau pecahan biasa <b>${fHTML(25, 8)}</b>).`
+                        }
+                    ]
+                },
+
+                // SECTION 7: PERCENT CONVERSION (Soal Baru)
+                {
+                    sectionId: 'sec-7',
+                    sectionTitle: '7. Konversi Persen',
+                    subtitle: 'Hubungan antara pecahan biasa/campuran dan persen',
+                    questions: [
+                        {
+                            id: 'q7_a',
+                            code: '7a',
+                            title: `Nyatakan ${fHTML(11, 16)} dalam persen (%):`,
+                            correctAns: '68.75',
+                            altAns: '68.75%',
+                            explanation: `(${fHTML(11, 16)}) &times; 100% = 1100 / 16 = <b>68.75%</b>.`
+                        },
+                        {
+                            id: 'q7_b',
+                            code: '7b',
+                            title: `Nyatakan ${fHTML(13, 40)} dalam persen (%):`,
+                            correctAns: '32.5',
+                            altAns: '32.5%',
+                            explanation: `(${fHTML(13, 40)}) &times; 100% = 1300 / 40 = <b>32.5%</b>.`
+                        },
+                        {
+                            id: 'q7_c',
+                            code: '7c',
+                            title: `Nyatakan ${mHTML(62, 1, 2)} % sebagai pecahan biasa paling sederhana:`,
+                            correctNum: 5, correctDen: 8,
+                            explanation: `${mHTML(62, 1, 2)} % = (${fHTML(125, 2)}) &divide; 100 = ${fHTML(125, 200)} = <b>${fHTML(5, 8)}</b>.`
+                        },
+                        {
+                            id: 'q7_d',
+                            code: '7d',
+                            title: `Nyatakan ${mHTML(37, 1, 2)} % sebagai pecahan biasa paling sederhana:`,
+                            correctNum: 3, correctDen: 8,
+                            explanation: `${mHTML(37, 1, 2)} % = (${fHTML(75, 2)}) &divide; 100 = ${fHTML(75, 200)} = <b>${fHTML(3, 8)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 8: ADDITION OF FRACTIONS (8 QUESTIONS)
+                {
+                    sectionId: 'sec-8',
+                    sectionTitle: '8. Penjumlahan Pecahan (+)',
+                    subtitle: 'Penjumlahan pecahan penyebut sama (4 soal) dan penyebut berbeda (4 soal)',
+                    questions: [
+                        // Penyebut Sama
+                        {
+                            id: 'q8_a',
+                            code: '8a (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(2, 9)} + ${fHTML(4, 9)}`,
+                            correctNum: 2, correctDen: 3,
+                            altNum: 6, altDen: 9,
+                            explanation: `Karena penyebut sudah sama: ${fHTML('2 + 4', 9)} = ${fHTML(6, 9)}. Sederhanakan (bagi 3): <b>${fHTML(2, 3)}</b>.`
+                        },
+                        {
+                            id: 'q8_b',
+                            code: '8b (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(5, 12)} + ${fHTML(3, 12)}`,
+                            correctNum: 2, correctDen: 3,
+                            altNum: 8, altDen: 12,
+                            explanation: `${fHTML('5 + 3', 12)} = ${fHTML(8, 12)}. Sederhanakan (bagi 4): <b>${fHTML(2, 3)}</b>.`
+                        },
+                        {
+                            id: 'q8_c',
+                            code: '8c (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(7, 15)} + ${fHTML(4, 15)}`,
+                            correctNum: 11, correctDen: 15,
+                            explanation: `${fHTML('7 + 4', 15)} = <b>${fHTML(11, 15)}</b>.`
+                        },
+                        {
+                            id: 'q8_d',
+                            code: '8d (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(5, 16)} + ${fHTML(7, 16)}`,
+                            correctNum: 3, correctDen: 4,
+                            altNum: 12, altDen: 16,
+                            explanation: `${fHTML('5 + 7', 16)} = ${fHTML(12, 16)}. Sederhanakan (bagi 4): <b>${fHTML(3, 4)}</b>.`
+                        },
+                        // Penyebut Berbeda
+                        {
+                            id: 'q8_e',
+                            code: '8e (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(1, 4)} + ${fHTML(2, 5)}`,
+                            correctNum: 13, correctDen: 20,
+                            explanation: `KPK dari 4 dan 5 adalah 20:<br>• ${fHTML(1, 4)} = ${fHTML(5, 20)}<br>• ${fHTML(2, 5)} = ${fHTML(8, 20)}<br>${fHTML('5 + 8', 20)} = <b>${fHTML(13, 20)}</b>.`
+                        },
+                        {
+                            id: 'q8_f',
+                            code: '8f (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(2, 7)} + ${fHTML(3, 5)}`,
+                            correctNum: 31, correctDen: 35,
+                            explanation: `KPK dari 7 dan 5 adalah 35:<br>• ${fHTML(2, 7)} = ${fHTML(10, 35)}<br>• ${fHTML(3, 5)} = ${fHTML(21, 35)}<br>${fHTML('10 + 21', 35)} = <b>${fHTML(31, 35)}</b>.`
+                        },
+                        {
+                            id: 'q8_g',
+                            code: '8g (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(3, 8)} + ${fHTML(1, 6)}`,
+                            correctNum: 13, correctDen: 24,
+                            explanation: `KPK dari 8 dan 6 adalah 24:<br>• ${fHTML(3, 8)} = ${fHTML(9, 24)}<br>• ${fHTML(1, 6)} = ${fHTML(4, 24)}<br>${fHTML('9 + 4', 24)} = <b>${fHTML(13, 24)}</b>.`
+                        },
+                        {
+                            id: 'q8_h',
+                            code: '8h (Penyebut Beda)',
+                            type: 'mixed_op',
+                            expression: `${fHTML(2, 9)} + ${fHTML(5, 6)}`,
+                            correctWhole: 1, correctNum: 1, correctDen: 18,
+                            altNum: 19, altDen: 18,
+                            explanation: `KPK dari 9 dan 6 adalah 18:<br>• ${fHTML(2, 9)} = ${fHTML(4, 18)}<br>• ${fHTML(5, 6)} = ${fHTML(15, 18)}<br>${fHTML('4 + 15', 18)} = ${fHTML(19, 18)} = <b>${mHTML(1, 1, 18)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 9: SUBTRACTION OF FRACTIONS (8 QUESTIONS)
+                {
+                    sectionId: 'sec-9',
+                    sectionTitle: '9. Pengurangan Pecahan (-)',
+                    subtitle: 'Pengurangan pecahan penyebut sama (4 soal) dan penyebut berbeda (4 soal)',
+                    questions: [
+                        // Penyebut Sama
+                        {
+                            id: 'q9_a',
+                            code: '9a (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(8, 11)} - ${fHTML(3, 11)}`,
+                            correctNum: 5, correctDen: 11,
+                            explanation: `Penyebut sama: ${fHTML('8 - 3', 11)} = <b>${fHTML(5, 11)}</b>.`
+                        },
+                        {
+                            id: 'q9_b',
+                            code: '9b (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(11, 14)} - ${fHTML(5, 14)}`,
+                            correctNum: 3, correctDen: 7,
+                            altNum: 6, altDen: 14,
+                            explanation: `${fHTML('11 - 5', 14)} = ${fHTML(6, 14)}. Sederhanakan (bagi 2): <b>${fHTML(3, 7)}</b>.`
+                        },
+                        {
+                            id: 'q9_c',
+                            code: '9c (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(13, 18)} - ${fHTML(5, 18)}`,
+                            correctNum: 4, correctDen: 9,
+                            altNum: 8, altDen: 18,
+                            explanation: `${fHTML('13 - 5', 18)} = ${fHTML(8, 18)}. Sederhanakan (bagi 2): <b>${fHTML(4, 9)}</b>.`
+                        },
+                        {
+                            id: 'q9_d',
+                            code: '9d (Penyebut Sama)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(17, 20)} - ${fHTML(9, 20)}`,
+                            correctNum: 2, correctDen: 5,
+                            altNum: 8, altDen: 20,
+                            explanation: `${fHTML('17 - 9', 20)} = ${fHTML(8, 20)}. Sederhanakan (bagi 4): <b>${fHTML(2, 5)}</b>.`
+                        },
+                        // Penyebut Berbeda
+                        {
+                            id: 'q9_e',
+                            code: '9e (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(3, 4)} - ${fHTML(2, 5)}`,
+                            correctNum: 7, correctDen: 20,
+                            explanation: `KPK dari 4 dan 5 adalah 20:<br>• ${fHTML(3, 4)} = ${fHTML(15, 20)}<br>• ${fHTML(2, 5)} = ${fHTML(8, 20)}<br>${fHTML('15 - 8', 20)} = <b>${fHTML(7, 20)}</b>.`
+                        },
+                        {
+                            id: 'q9_f',
+                            code: '9f (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(5, 6)} - ${fHTML(3, 8)}`,
+                            correctNum: 11, correctDen: 24,
+                            explanation: `KPK dari 6 dan 8 adalah 24:<br>• ${fHTML(5, 6)} = ${fHTML(20, 24)}<br>• ${fHTML(3, 8)} = ${fHTML(9, 24)}<br>${fHTML('20 - 9', 24)} = <b>${fHTML(11, 24)}</b>.`
+                        },
+                        {
+                            id: 'q9_g',
+                            code: '9g (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(7, 9)} - ${fHTML(1, 4)}`,
+                            correctNum: 19, correctDen: 36,
+                            explanation: `KPK dari 9 dan 4 adalah 36:<br>• ${fHTML(7, 9)} = ${fHTML(28, 36)}<br>• ${fHTML(1, 4)} = ${fHTML(9, 36)}<br>${fHTML('28 - 9', 36)} = <b>${fHTML(19, 36)}</b>.`
+                        },
+                        {
+                            id: 'q9_h',
+                            code: '9h (Penyebut Beda)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(4, 5)} - ${fHTML(2, 7)}`,
+                            correctNum: 18, correctDen: 35,
+                            explanation: `KPK dari 5 dan 7 adalah 35:<br>• ${fHTML(4, 5)} = ${fHTML(28, 35)}<br>• ${fHTML(2, 7)} = ${fHTML(10, 35)}<br>${fHTML('28 - 10', 35)} = <b>${fHTML(18, 35)}</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 10: MULTIPLICATION OF FRACTIONS (8 QUESTIONS)
+                {
+                    sectionId: 'sec-10',
+                    sectionTitle: '10. Perkalian Pecahan (\u00D7)',
+                    subtitle: 'Perkalian pecahan biasa (4 soal) dan pecahan campuran/berbeda (4 soal)',
+                    questions: [
+                        // Pecahan Biasa
+                        {
+                            id: 'q10_a',
+                            code: '10a (Pecahan Biasa)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(3, 4)} &times; ${fHTML(2, 5)}`,
+                            correctNum: 3, correctDen: 10,
+                            altNum: 6, altDen: 20,
+                            explanation: `Kalikan pembilang dengan pembilang, penyebut dengan penyebut:<br>${fHTML('3 &times; 2', '4 &times; 5')} = ${fHTML(6, 20)} = <b>${fHTML(3, 10)}</b>.`
+                        },
+                        {
+                            id: 'q10_b',
+                            code: '10b (Pecahan Biasa)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(5, 8)} &times; ${fHTML(4, 7)}`,
+                            correctNum: 5, correctDen: 14,
+                            altNum: 20, altDen: 56,
+                            explanation: `${fHTML('5 &times; 4', '8 &times; 7')} = ${fHTML(20, 56)} = <b>${fHTML(5, 14)}</b>.`
+                        },
+                        {
+                            id: 'q10_c',
+                            code: '10c (Pecahan Biasa)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(2, 9)} &times; ${fHTML(3, 10)}`,
+                            correctNum: 1, correctDen: 15,
+                            altNum: 6, altDen: 90,
+                            explanation: `${fHTML('2 &times; 3', '9 &times; 10')} = ${fHTML(6, 90)} = <b>${fHTML(1, 15)}</b>.`
+                        },
+                        {
+                            id: 'q10_d',
+                            code: '10d (Pecahan Biasa)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(7, 12)} &times; ${fHTML(4, 5)}`,
+                            correctNum: 7, correctDen: 15,
+                            altNum: 28, altDen: 60,
+                            explanation: `${fHTML('7 &times; 4', '12 &times; 5')} = ${fHTML(28, 60)} = <b>${fHTML(7, 15)}</b>.`
+                        },
+                        // Pecahan Campuran
+                        {
+                            id: 'q10_e',
+                            code: '10e (Campuran)',
+                            type: 'integer_or_frac',
+                            expression: `${mHTML(1, 1, 2)} &times; ${fHTML(2, 3)}`,
+                            correctWhole: 1,
+                            explanation: `Ubah campuran ke biasa: ${mHTML(1, 1, 2)} = ${fHTML(3, 2)}.<br>Hitung: ${fHTML(3, 2)} &times; ${fHTML(2, 3)} = ${fHTML(6, 6)} = <b>1</b>.`
+                        },
+                        {
+                            id: 'q10_f',
+                            code: '10f (Campuran)',
+                            type: 'mixed_op',
+                            expression: `${mHTML(2, 1, 4)} &times; ${fHTML(4, 5)}`,
+                            correctWhole: 1, correctNum: 4, correctDen: 5,
+                            altNum: 9, altDen: 5,
+                            explanation: `${mHTML(2, 1, 4)} = ${fHTML(9, 4)}.<br>Hitung: ${fHTML(9, 4)} &times; ${fHTML(4, 5)} = ${fHTML(36, 20)} = ${fHTML(9, 5)} = <b>${mHTML(1, 4, 5)}</b>.`
+                        },
+                        {
+                            id: 'q10_g',
+                            code: '10g (Campuran)',
+                            type: 'integer_or_frac',
+                            expression: `${mHTML(1, 3, 5)} &times; ${mHTML(1, 1, 4)}`,
+                            correctWhole: 2,
+                            explanation: `${mHTML(1, 3, 5)} = ${fHTML(8, 5)} dan ${mHTML(1, 1, 4)} = ${fHTML(5, 4)}.<br>Hitung: ${fHTML(8, 5)} &times; ${fHTML(5, 4)} = ${fHTML(40, 20)} = <b>2</b>.`
+                        },
+                        {
+                            id: 'q10_h',
+                            code: '10h (Campuran)',
+                            type: 'integer_or_frac',
+                            expression: `${mHTML(3, 1, 3)} &times; ${mHTML(2, 2, 5)}`,
+                            correctWhole: 8,
+                            explanation: `${mHTML(3, 1, 3)} = ${fHTML(10, 3)} dan ${mHTML(2, 2, 5)} = ${fHTML(12, 5)}.<br>Hitung: ${fHTML(10, 3)} &times; ${fHTML(12, 5)} = ${fHTML(120, 15)} = <b>8</b>.`
+                        }
+                    ]
+                },
+
+                // SECTION 11: DIVISION OF FRACTIONS (8 QUESTIONS)
+                {
+                    sectionId: 'sec-11',
+                    sectionTitle: '11. Pembagian Pecahan (\u00F7)',
+                    subtitle: 'Pembagian cara langsung (4 soal) dan pembagian cara kebalikan/standar (4 soal)',
+                    questions: [
+                        // Pembagian Cara Langsung
+                        {
+                            id: 'q11_a',
+                            code: '11a (Cara Langsung)',
+                            type: 'mixed_op',
+                            expression: `${fHTML(8, 15)} &divide; ${fHTML(2, 5)}`,
+                            correctWhole: 1, correctNum: 1, correctDen: 3,
+                            altNum: 4, altDen: 3,
+                            explanation: `<b>Pembagian Langsung:</b> Pembilang &divide; pembilang, penyebut &divide; penyebut:<br>${fHTML('8 &divide; 2', '15 &divide; 5')} = ${fHTML(4, 3)} = <b>${mHTML(1, 1, 3)}</b>.`
+                        },
+                        {
+                            id: 'q11_b',
+                            code: '11b (Cara Langsung)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(12, 25)} &divide; ${fHTML(4, 5)}`,
+                            correctNum: 3, correctDen: 5,
+                            explanation: `<b>Pembagian Langsung:</b> Pembilang &divide; pembilang, penyebut &divide; penyebut:<br>${fHTML('12 &divide; 4', '25 &divide; 5')} = <b>${fHTML(3, 5)}</b>.`
+                        },
+                        {
+                            id: 'q11_c',
+                            code: '11c (Cara Langsung)',
+                            type: 'mixed_op',
+                            expression: `${fHTML(15, 28)} &divide; ${fHTML(3, 7)}`,
+                            correctWhole: 1, correctNum: 1, correctDen: 4,
+                            altNum: 5, altDen: 4,
+                            explanation: `<b>Pembagian Langsung:</b> ${fHTML('15 &divide; 3', '28 &divide; 7')} = ${fHTML(5, 4)} = <b>${mHTML(1, 1, 4)}</b>.`
+                        },
+                        {
+                            id: 'q11_d',
+                            code: '11d (Cara Langsung)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(18, 35)} &divide; ${fHTML(6, 7)}`,
+                            correctNum: 3, correctDen: 5,
+                            explanation: `<b>Pembagian Langsung:</b> ${fHTML('18 &divide; 6', '35 &divide; 7')} = <b>${fHTML(3, 5)}</b>.`
+                        },
+                        // Pembagian Cara Kebalikan (Standar Perkalian Balik)
+                        {
+                            id: 'q11_e',
+                            code: '11e (Cara Kebalikan)',
+                            type: 'fraction_op',
+                            expression: `${fHTML(3, 8)} &divide; ${fHTML(5, 6)}`,
+                            correctNum: 9, correctDen: 20,
+                            altNum: 18, altDen: 40,
+                            explanation: `<b>Ubah ke perkalian dengan kebalikan pecahan kedua:</b><br>${fHTML(3, 8)} &times; ${fHTML(6, 5)} = ${fHTML(18, 40)} = <b>${fHTML(9, 20)}</b>.`
+                        },
+                        {
+                            id: 'q11_f',
+                            code: '11f (Cara Kebalikan)',
+                            type: 'mixed_op',
+                            expression: `${fHTML(4, 9)} &divide; ${fHTML(2, 5)}`,
+                            correctWhole: 1, correctNum: 1, correctDen: 9,
+                            altNum: 10, altDen: 9,
+                            explanation: `${fHTML(4, 9)} &times; ${fHTML(5, 2)} = ${fHTML(20, 18)} = ${fHTML(10, 9)} = <b>${mHTML(1, 1, 9)}</b>.`
+                        },
+                        {
+                            id: 'q11_g',
+                            code: '11g (Cara Kebalikan)',
+                            type: 'integer_or_frac',
+                            expression: `${mHTML(1, 3, 4)} &divide; ${fHTML(7, 8)}`,
+                            correctWhole: 2,
+                            explanation: `${mHTML(1, 3, 4)} = ${fHTML(7, 4)}.<br>Hitung: ${fHTML(7, 4)} &times; ${fHTML(8, 7)} = ${fHTML(56, 28)} = <b>2</b>.`
+                        },
+                        {
+                            id: 'q11_h',
+                            code: '11h (Cara Kebalikan)',
+                            type: 'mixed_op',
+                            expression: `${mHTML(2, 2, 3)} &divide; ${mHTML(1, 1, 9)}`,
+                            correctWhole: 2, correctNum: 2, correctDen: 5,
+                            altNum: 12, altDen: 5,
+                            explanation: `${mHTML(2, 2, 3)} = ${fHTML(8, 3)} dan ${mHTML(1, 1, 9)} = ${fHTML(10, 9)}.<br>Hitung: ${fHTML(8, 3)} &times; ${fHTML(9, 10)} = ${fHTML(72, 30)} = ${fHTML(12, 5)} = <b>${mHTML(2, 2, 5)}</b>.`
+                        }
+                    ]
+                }
+            ];
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            currentQuestionsData.forEach((sec) => {
+                const sectionEl = document.createElement('section');
+                sectionEl.id = sec.sectionId;
+                sectionEl.className = 'question-section bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6';
+
+                let sectionHTML = `
+                    <div class="border-b border-slate-200 pb-4">
+                        <h2 class="text-xl font-extrabold text-indigo-900 flex items-center gap-2">
+                            <span>${sec.sectionTitle}</span>
+                        </h2>
+                        <p class="text-sm text-slate-500 mt-1">${sec.subtitle}</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                `;
+
+                sec.questions.forEach((q) => {
+                    sectionHTML += renderSingleQuestionCard(q);
+                });
+
+                sectionHTML += `</div>`;
+                sectionEl.innerHTML = sectionHTML;
+                container.appendChild(sectionEl);
+            });
+        }
+
+        function renderSingleQuestionCard(q) {
+            let bodyContent = '';
+
+            if (q.type === 'visual_proper') {
+                bodyContent = `
+                    <div class="flex flex-col items-center gap-4">
+                        <div class="p-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center">${q.svg}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1.5 font-bold focus:border-indigo-500 focus:outline-none text-slate-800">
+                                <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1.5 font-bold focus:border-indigo-500 focus:outline-none text-slate-800">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (q.type === 'visual_mixed' || q.type === 'mixed_op') {
+                bodyContent = `
+                    <div class="flex flex-col items-center gap-3">
+                        ${q.svg ? `<div>${q.svg}</div>` : ''}
+                        ${q.expression ? `<div class="text-2xl font-bold text-slate-700">${q.expression} =</div>` : ''}
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="${q.id}_w" class="w-16 text-center border-2 border-slate-300 rounded-lg p-2 font-bold text-lg focus:border-indigo-500 focus:outline-none text-slate-800">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none text-slate-800">
+                                <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none text-slate-800">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (q.type === 'fraction_op') {
+                bodyContent = `
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="text-2xl font-bold text-slate-700 flex items-center gap-3">
+                            <span>${q.expression}</span>
+                            <span>=</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1.5 font-bold focus:border-indigo-500 focus:outline-none text-slate-800">
+                            <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                            <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1.5 font-bold focus:border-indigo-500 focus:outline-none text-slate-800">
+                        </div>
+                    </div>
+                `;
+            } else if (q.type === 'integer_or_frac') {
+                bodyContent = `
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="text-2xl font-bold text-slate-700 flex items-center gap-3">
+                            <span>${q.expression}</span>
+                            <span>=</span>
+                        </div>
+                        <input type="number" id="${q.id}_w" class="w-24 text-center border-2 border-slate-300 rounded-lg p-2 font-bold text-xl focus:border-indigo-500 focus:outline-none text-slate-800">
+                    </div>
+                `;
+            } else if (q.type === 'equivalent') {
+                bodyContent = `
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-lg text-slate-700">Pecahan:</span>
+                            <span class="text-xl">${fHTML(q.num, q.den)}</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_n1" class="w-14 text-center border-2 border-slate-300 rounded-lg p-1 font-semibold focus:border-indigo-500 focus:outline-none">
+                                <div class="w-10 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_d1" class="w-14 text-center border-2 border-slate-300 rounded-lg p-1 font-semibold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                            <span class="text-slate-400 font-bold">dan</span>
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_n2" class="w-14 text-center border-2 border-slate-300 rounded-lg p-1 font-semibold focus:border-indigo-500 focus:outline-none">
+                                <div class="w-10 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_d2" class="w-14 text-center border-2 border-slate-300 rounded-lg p-1 font-semibold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (q.type === 'simplify') {
+                bodyContent = `
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${fHTML(q.num, q.den)}</span>
+                            <span class="text-2xl font-bold text-slate-400">=</span>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                            <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                            <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                        </div>
+                    </div>
+                `;
+            } else if (q.id.startsWith('q3_')) {
+                bodyContent = `
+                    <div class="flex items-center justify-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <span class="text-xl">${fHTML(q.num1, q.den1)}</span>
+                        
+                        <select id="${q.id}_ans" class="px-4 py-2 border-2 border-slate-300 rounded-lg font-bold text-xl bg-white focus:border-indigo-500 focus:outline-none">
+                            <option value=""></option>
+                            <option value=">">&gt;</option>
+                            <option value="<">&lt;</option>
+                        </select>
+
+                        <span class="text-xl">${fHTML(q.num2, q.den2)}</span>
+                    </div>
+                `;
+            } else if (q.id.startsWith('q4_')) {
+                bodyContent = `
+                    <div class="space-y-3">
+                        <p class="text-sm font-medium text-slate-700">${q.title}</p>
+                        <div class="flex gap-4 justify-center items-center bg-indigo-50 p-3 rounded-xl text-indigo-900 font-bold text-lg">
+                            ${q.list.map(f => fHTML(f.num, f.den)).join(' <span class="mx-1 text-slate-400">,</span> ')}
+                        </div>
+                        <div>
+                            <input type="text" id="${q.id}_ans" class="w-full border-2 border-slate-300 rounded-lg p-2.5 font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        </div>
+                    </div>
+                `;
+            } else if (q.id === 'q5_a' || q.id === 'q5_b') {
+                bodyContent = `
+                    <div class="space-y-3">
+                        <p class="text-sm text-slate-600">${q.title}</p>
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${fHTML(q.num, q.den)}</span>
+                            <span class="text-2xl font-bold text-slate-400">=</span>
+                            <div class="flex items-center gap-1.5">
+                                <input type="number" id="${q.id}_w" class="w-14 text-center border-2 border-slate-300 rounded-lg p-2 font-bold text-lg focus:border-indigo-500 focus:outline-none">
+                                <div class="flex flex-col items-center">
+                                    <input type="number" id="${q.id}_num" class="w-14 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                                    <div class="w-10 h-0.5 bg-slate-800 my-1"></div>
+                                    <input type="number" id="${q.id}_den" class="w-14 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (q.id === 'q5_c' || q.id === 'q5_d') {
+                bodyContent = `
+                    <div class="space-y-3">
+                        <p class="text-sm text-slate-600">${q.title}</p>
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${mHTML(q.whole, q.num, q.den)}</span>
+                            <span class="text-2xl font-bold text-slate-400">=</span>
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                                <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (q.id === 'q6_a' || q.id === 'q6_b') {
+                bodyContent = `
+                    <div class="space-y-2">
+                        <p class="text-sm font-medium text-slate-700 flex items-center gap-2">${q.title}</p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="${q.id}_ans" class="w-40 border-2 border-slate-300 rounded-lg p-2 font-bold text-slate-800 focus:border-indigo-500 focus:outline-none">
+                        </div>
+                    </div>
+                `;
+            } else if (q.id === 'q6_c' || q.id === 'q6_d') {
+                bodyContent = `
+                    <div class="space-y-2">
+                        <p class="text-sm font-medium text-slate-700">${q.title}</p>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="${q.id}_w" class="w-14 text-center border-2 border-slate-300 rounded-lg p-2 font-bold text-lg focus:border-indigo-500 focus:outline-none">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                                <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (q.id === 'q7_a' || q.id === 'q7_b') {
+                bodyContent = `
+                    <div class="space-y-2">
+                        <p class="text-sm font-medium text-slate-700 flex items-center gap-2">${q.title}</p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="${q.id}_ans" class="w-32 border-2 border-slate-300 rounded-lg p-2 font-bold text-slate-800 focus:border-indigo-500 focus:outline-none">
+                            <span class="font-extrabold text-indigo-700 text-lg">%</span>
+                        </div>
+                    </div>
+                `;
+            } else if (q.id === 'q7_c' || q.id === 'q7_d') {
+                bodyContent = `
+                    <div class="space-y-2">
+                        <p class="text-sm font-medium text-slate-700 flex items-center gap-2">${q.title}</p>
+                        <div class="flex items-center gap-2">
+                            <div class="flex flex-col items-center">
+                                <input type="number" id="${q.id}_num" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                                <div class="w-12 h-0.5 bg-slate-800 my-1"></div>
+                                <input type="number" id="${q.id}_den" class="w-16 text-center border-2 border-slate-300 rounded-lg p-1 font-bold focus:border-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div id="card_${q.id}" class="q-card border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-all flex flex-col justify-between space-y-4 bg-white relative">
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="inline-block px-2.5 py-1 bg-indigo-100 text-indigo-800 text-xs font-bold rounded-md">Soal ${q.code}</span>
+                        <div id="status_${q.id}" class="hidden text-xs font-bold px-2 py-1 rounded-md"></div>
+                    </div>
+
+                    <div class="flex-grow flex flex-col justify-center">
+                        ${bodyContent}
+                    </div>
+
+                    <div id="exp_${q.id}" class="hidden mt-3 p-3 bg-indigo-50/80 border border-indigo-100 rounded-lg text-xs text-indigo-950 space-y-1">
+                        <div class="font-bold text-indigo-900 flex items-center gap-1">
+                            <i class="fa-solid fa-lightbulb text-amber-500"></i> Pembahasan:
+                        </div>
+                        <div>${q.explanation}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkAllAnswers() {
+            let total = 0;
+            let correctCount = 0;
+
+            currentQuestionsData.forEach(sec => {
+                sec.questions.forEach(q => {
+                    total++;
+                    let isCorrect = false;
+
+                    const statusEl = document.getElementById(`status_${q.id}`);
+                    const expEl = document.getElementById(`exp_${q.id}`);
+                    const cardEl = document.getElementById(`card_${q.id}`);
+
+                    if (q.type === 'visual_proper' || q.type === 'fraction_op') {
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value);
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value);
+                        if ((numVal === q.correctNum || numVal === q.correctAnswerNumerator) && 
+                            (denVal === q.correctDen || denVal === q.correctAnswerDenominator)) {
+                            isCorrect = true;
+                        } else if (q.altNum && numVal === q.altNum && denVal === q.altDen) {
+                            isCorrect = true;
+                        }
+                    } else if (q.type === 'visual_mixed' || q.type === 'mixed_op') {
+                        const wVal = parseInt(document.getElementById(`${q.id}_w`).value) || 0;
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value) || 0;
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value) || 0;
+
+                        if (wVal === q.correctWhole && 
+                           ((numVal === q.correctNum && denVal === q.correctDen) || 
+                            (q.altNum && numVal === q.altNum && denVal === q.altDen))) {
+                            isCorrect = true;
+                        } else if (wVal === 0 && numVal === q.altNum && denVal === q.altDen) {
+                            isCorrect = true;
+                        }
+                    } else if (q.type === 'integer_or_frac') {
+                        const wVal = parseInt(document.getElementById(`${q.id}_w`).value);
+                        if (wVal === q.correctWhole) {
+                            isCorrect = true;
+                        }
+                    } else if (q.type === 'equivalent') {
+                        const n1 = parseInt(document.getElementById(`${q.id}_n1`).value);
+                        const d1 = parseInt(document.getElementById(`${q.id}_d1`).value);
+                        const n2 = parseInt(document.getElementById(`${q.id}_n2`).value);
+                        const d2 = parseInt(document.getElementById(`${q.id}_d2`).value);
+
+                        const targetVal = q.num / q.den;
+                        if (n1 && d1 && n2 && d2 && 
+                            Math.abs((n1/d1) - targetVal) < 0.0001 && 
+                            Math.abs((n2/d2) - targetVal) < 0.0001 &&
+                            (n1 !== q.num || d1 !== q.den) &&
+                            (n1 !== n2 || d1 !== d2)) {
+                            isCorrect = true;
+                        }
+                    } else if (q.type === 'simplify') {
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value);
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value);
+                        if (numVal === q.correctNum && denVal === q.correctDen) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id.startsWith('q3_')) {
+                        const val = document.getElementById(`${q.id}_ans`).value;
+                        if (val === q.correct) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id.startsWith('q4_')) {
+                        const raw = document.getElementById(`${q.id}_ans`).value.trim().replaceAll(' ', '');
+                        const target = q.correctOrder.join(',').replaceAll(' ', '');
+                        if (raw === target) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id === 'q5_a' || q.id === 'q5_b') {
+                        const wVal = parseInt(document.getElementById(`${q.id}_w`).value);
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value);
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value);
+                        if (wVal === q.correctWhole && 
+                           ((numVal === q.correctNum && denVal === q.correctDen) || 
+                            (q.altNum && numVal === q.altNum && denVal === q.altDen))) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id === 'q5_c' || q.id === 'q5_d') {
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value);
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value);
+                        if (numVal === q.correctNum && denVal === q.correctDen) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id === 'q6_a' || q.id === 'q6_b') {
+                        const val = document.getElementById(`${q.id}_ans`).value.replace(',', '.').trim();
+                        if (val === q.correctDec) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id === 'q6_c' || q.id === 'q6_d') {
+                        const wVal = parseInt(document.getElementById(`${q.id}_w`).value) || 0;
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value) || 0;
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value) || 0;
+
+                        if ((wVal === q.correctWhole && numVal === q.correctNum && denVal === q.correctDen) ||
+                            (wVal === 0 && numVal === q.altNum && denVal === q.altDen)) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id === 'q7_a' || q.id === 'q7_b') {
+                        const val = document.getElementById(`${q.id}_ans`).value.replace(',', '.').trim();
+                        if (val === q.correctAns || (q.altAns && val === q.altAns)) {
+                            isCorrect = true;
+                        }
+                    } else if (q.id === 'q7_c' || q.id === 'q7_d') {
+                        const numVal = parseInt(document.getElementById(`${q.id}_num`).value);
+                        const denVal = parseInt(document.getElementById(`${q.id}_den`).value);
+                        if (numVal === q.correctNum && denVal === q.correctDen) {
+                            isCorrect = true;
+                        }
+                    }
+
+                    if (statusEl && expEl && cardEl) {
+                        statusEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
+                        expEl.classList.remove('hidden');
+
+                        if (isCorrect) {
+                            correctCount++;
+                            statusEl.classList.add('bg-emerald-100', 'text-emerald-800');
+                            statusEl.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Benar';
+                            cardEl.classList.add('ring-2', 'ring-emerald-400');
+                            cardEl.classList.remove('ring-2', 'ring-rose-400');
+                        } else {
+                            statusEl.classList.add('bg-rose-100', 'text-rose-800');
+                            statusEl.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i> Salah';
+                            cardEl.classList.add('ring-2', 'ring-rose-400');
+                            cardEl.classList.remove('ring-2', 'ring-emerald-400');
+                        }
+                    }
+                });
+            });
+
+            // Tampilkan Papan Skor
+            const scoreBoard = document.getElementById('score-board');
+            const scoreBadge = document.getElementById('score-badge');
+            const scoreTitle = document.getElementById('score-title');
+            const scoreDetail = document.getElementById('score-detail');
+
+            const scorePercent = Math.round((correctCount / total) * 100);
+            scoreBadge.innerText = `${scorePercent}%`;
+            
+            if (scorePercent === 100) {
+                scoreBadge.className = 'w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white bg-emerald-500 shadow-lg';
+                scoreTitle.innerText = 'Luar Biasa! Skor Sempurna 🎉';
+            } else if (scorePercent >= 75) {
+                scoreBadge.className = 'w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white bg-indigo-600 shadow-lg';
+                scoreTitle.innerText = 'Hasil Sangat Baik! 👍';
+            } else {
+                scoreBadge.className = 'w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-extrabold text-white bg-amber-500 shadow-lg';
+                scoreTitle.innerText = 'Terus Latihan & Cek Pembahasan! 💪';
+            }
+
+            scoreDetail.innerText = `Kamu berhasil menjawab ${correctCount} dari ${total} soal dengan benar. Simak pembahasan lengkap di bawah tiap kartu soal!`;
+            scoreBoard.classList.remove('hidden');
+            scoreBoard.classList.add('flex');
+            scoreBoard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generateNewQuestions() {
+            currentQuestionsData = generateQuestions();
+            renderQuestions();
+
+            const scoreBoard = document.getElementById('score-board');
+            scoreBoard.classList.add('hidden');
+            scoreBoard.classList.remove('flex');
+
+            scrollToTop();
+        }
+
+        function filterSection(sectionId, evt) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(t => {
+                t.classList.remove('bg-indigo-600', 'text-white');
+                t.classList.add('bg-white', 'text-slate-600');
+            });
+
+            if (evt) {
+                evt.currentTarget.classList.remove('bg-white', 'text-slate-600');
+                evt.currentTarget.classList.add('bg-indigo-600', 'text-white');
+            }
+
+            const sections = document.querySelectorAll('.question-section');
+            sections.forEach(sec => {
+                if (sectionId === 'all' || sec.id === sectionId) {
+                    sec.classList.remove('hidden');
+                } else {
+                    sec.classList.add('hidden');
+                }
+            });
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = function() {
+            generateNewQuestions();
+        };
+    </script>
+</body>
+</html>
